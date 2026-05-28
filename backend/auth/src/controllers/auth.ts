@@ -204,7 +204,7 @@ export const forgetPassword = TryCatch(async (req, res, next) => {
 });
 
 export const resetPassword = TryCatch(async (req, res, next) => {
-  const { token } = req.params;
+ const token = req.params.token as string;
   const { password } = req.body;
 
   // if (!password || password.length < 6) {
@@ -258,3 +258,5 @@ export const resetPassword = TryCatch(async (req, res, next) => {
     message: "Password reset successfully",
   });
 });
+
+

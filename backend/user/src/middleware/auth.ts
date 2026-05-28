@@ -8,7 +8,7 @@ interface User {
     name: string;
     email: string;
     phone_number: string;
-    role: "job_seeker" | "recruiter";
+   role: "jobseeker" | "recruiter";
     bio: string | null;
     resume: string | null;
     resume_public_id: string | null;
@@ -57,7 +57,7 @@ export const isAuth = async (req: AuthenticatedRequest, res: Response, next: Nex
             })
             return;
         }
-        const user = users[0];
+       const user = users[0] as User;
 
         user.skills = user.skills || [];
 
