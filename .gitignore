@@ -17,3 +17,9 @@ build/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Secret Infrastructure Keys
+*.pem
+*.cert
+*.key
+certs/

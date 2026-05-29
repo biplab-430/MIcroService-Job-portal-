@@ -106,7 +106,7 @@ async function initDb() {
       )
     `;
 
-    // ================= FOLLOWERS INDEXES =================
+
 
     await sql`
       CREATE INDEX IF NOT EXISTS idx_followers_follower_id
