@@ -96,15 +96,7 @@ HireHeaven is split into **5 independent backend microservices** and **1 Next.js
 | **RealTime Service** | 5004 | Follow-gated real-time chat with presence and read receipts | Socket.IO, MongoDB Atlas, Redis, Neon PostgreSQL |
 | **Frontend** | 3000 | Complete user interface | Next.js 16, React 19, Tailwind CSS, shadcn/ui, Socket.IO client |
 
-For full per-service documentation see:
-- [`backend/auth/README.md`](./backend/auth/README.md)
-- [`backend/user/README.md`](./backend/user/README.md)
-- [`backend/job/README.md`](./backend/job/README.md)
-- [`backend/utilsService/README.md`](./backend/utilsService/README.md)
-- [`backend/realtime/README.md`](./backend/realtime/README.md)
-- [`frontend/README.md`](./frontend/README.md)
 
----
 
 ## Tech Stack
 
