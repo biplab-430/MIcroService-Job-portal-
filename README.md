@@ -89,10 +89,10 @@ HireHeaven is split into **5 independent backend microservices** and **1 Next.js
 
 | Service | Port | Core Responsibility | Key Tech |
 |---|---|---|---|
-| **Auth Service** | 5001 | Register, login, JWT issuance, forgot/reset password | bcrypt, JWT, Kafka producer, Redis |
+| **Auth Service** | 5000 | Register, login, JWT issuance, forgot/reset password | bcrypt, JWT, Kafka producer, Redis |
 | **User Service** | 5003 | User profiles, skills, job applications, follow graph | Neon PostgreSQL, Axios → Utils |
 | **Job Service** | 5002 | Companies, job postings, recruiter dashboards, application status | Neon PostgreSQL, Kafka producer |
-| **Utils Service** | 5005 | File uploads, AI tools, email dispatch | Cloudinary, Gemini AI, Puppeteer, Nodemailer, Kafka consumer |
+| **Utils Service** | 5001 | File uploads, AI tools, email dispatch | Cloudinary, Gemini AI, Puppeteer, Nodemailer, Kafka consumer |
 | **RealTime Service** | 5004 | Follow-gated real-time chat with presence and read receipts | Socket.IO, MongoDB Atlas, Redis, Neon PostgreSQL |
 | **Frontend** | 3000 | Complete user interface | Next.js 16, React 19, Tailwind CSS, shadcn/ui, Socket.IO client |
 
