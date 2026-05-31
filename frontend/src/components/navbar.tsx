@@ -249,7 +249,7 @@ const Navbar = () => {
               <HomeIcon size={18}/>Home
             </Button>
           </Link>
-        <Link href={'/jobs'} onClick={toggleMenu}>
+        <Link href={'/job'} onClick={toggleMenu}>
             <Button variant={'ghost'} className='w-full justify-start gap-3 h-11'>
               <Briefcase size={18}/>Jobs
             </Button>
@@ -271,7 +271,7 @@ const Navbar = () => {
                 
                 {/* MOBILE GLOBAL BADGE */}
                 {!unreadLoading && totalUnreadMessages > 0 && (
-                  <span className="absolute -top-2 -right-2 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 min-w-4.5 h-4.5 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
                     {totalUnreadMessages > 99 ? "99+" : totalUnreadMessages}
                   </span>
                 )}

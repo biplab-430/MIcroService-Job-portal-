@@ -18,7 +18,11 @@ cloudinary.config({
 const app = express();
 
 // ✅ Enable CORS
-app.use(cors());
+app.use(cors({
+    origin: "https://m-icro-service-job-portal.vercel.app", // Your Vercel frontend URL
+    credentials: true, // Allows secure communication and credential passing
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+}));
 
 // ✅ IMPORTANT: Body parsers MUST come before routes
 app.use(express.json({ limit: "50mb" }));

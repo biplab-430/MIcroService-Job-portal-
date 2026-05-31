@@ -9,6 +9,8 @@ import axios from "axios";
 export const utils_service =
   process.env.NEXT_PUBLIC_UTILS_SERVICE as string;
 
+
+
 export const auth_service =
   process.env.NEXT_PUBLIC_AUTH_SERVICE as string;
 
@@ -42,8 +44,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
             setUser(data)
             setIsAuth(true)
         } catch (error: any) {
-            setIsAuth(false)
-        } finally {
+    if (error?.response?.status === 401) {
+        Cookies.remove("token");
+    }
+
+    setIsAuth(false);
+} finally {
             setLoading(false)
         }
     }
@@ -279,27 +285,38 @@ const [applications,setApplications]=useState<Application[] >([])
 
 async function fetchApplications() {
     try {
-        const {data}=await axios.get(`${user_service}/api/user/application/all`,
-           {
-            headers:{
-                Authorization:`Bearer ${token}`
+        const { data } = await axios.get(
+            `${user_service}/api/user/application/all`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
             }
-           }
-        )
+        );
+
         setApplications(data);
     } catch (error: any) {
-    toast.error(
-      error?.response?.data?.message || "Failed to apply for job"
-    );
-  }finally{
-    setBtnLoading(false)
-  }
+        // Ignore unauthorized errors during initial app load
+        if (error?.response?.status !== 401) {
+            toast.error(
+                error?.response?.data?.message ||
+                "Failed to fetch applications"
+            );
+        }
+    } finally {
+        setBtnLoading(false);
+    }
 }
 
-    useEffect(() => {
-        fetchUser()
-        fetchApplications();
-    }, []);
+   useEffect(() => {
+    if (!token) {
+        setLoading(false);
+        return;
+    }
+
+    fetchUser();
+    fetchApplications();
+}, [token]);
     return <AppContext.Provider value={{ user, loading, setUser, isAuth, setIsAuth, setLoading, btnLoading, LogOutuser, updateProfilePic, updateResume, updateUser, addskill, removeSkill,applyJob,deleteApplication,applications,fetchApplications }}>{children}
         <Toaster /></AppContext.Provider>
 }

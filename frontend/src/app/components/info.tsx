@@ -204,131 +204,144 @@ const Info: React.FC<AccountProps> = ({
           </div>
 
           {/* resume section */}
-          {user.role === "jobseeker" && user.resume && (<div className="mt-8">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <NotepadText size={20} className="text-blue-600" />
-            </h2>
-            <div className="flex items-center gap-3 p-4 rounded-lg border hover:border-blue-500 transition-colors">
-              <div className="h-12 w-12 rounded-lg bg-red-100 dark:bg-red-900 flex items-center justify-center">
-                <NotepadText size={20} className="text-red-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">Resume Doument</p>
-                <Link href={user.resume} className="text-sm text-blue-500 hover:underline" target="_blamk" >
-                  View Resume PDF
-                </Link>
-              </div>
-              {/* edit func */}
-              {isYourAccount && (
-                <>
-                  <Button
-                    variant={"outline"}
-                    size={"sm"}
-                    onClick={handleResumeClick}
-                    className="gap-2"
-                  >
-                    UPDATE your Resume
-                  </Button>
+         {user.role === "jobseeker" && user.resume && (
+  <div className="mt-8">
+    <h2 className="text-lg font-semibold flex items-center gap-2">
+      <NotepadText size={20} className="text-blue-600" />
+    </h2>
+    
+    {/* Added flex-wrap for mobile and sm:flex-nowrap for larger screens */}
+    <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 p-4 rounded-lg border hover:border-blue-500 transition-colors">
+      
+      {/* Added shrink-0 so the icon doesn't get squeezed on small screens */}
+      <div className="h-12 w-12 shrink-0 rounded-lg bg-red-100 dark:bg-red-900 flex items-center justify-center">
+        <NotepadText size={20} className="text-red-600" />
+      </div>
+      
+      {/* Added a minimum width so it wraps neatly when space runs out on mobile */}
+      <div className="flex-1 min-w-[150px]">
+        <p className="text-sm font-medium">Resume Document</p>
+        <Link 
+          href={user.resume} 
+          className="text-sm text-blue-500 hover:underline" 
+          target="_blank" 
+        >
+          View Resume PDF
+        </Link>
+      </div>
+      
+      {/* edit func */}
+      {isYourAccount && (
+        <>
+          {/* Added w-full for mobile (stacks nicely) and sm:w-auto for desktop */}
+          <Button
+            variant={"outline"}
+            size={"sm"}
+            onClick={handleResumeClick}
+            className="w-full sm:w-auto gap-2 shrink-0 mt-2 sm:mt-0"
+          >
+            UPDATE your Resume
+          </Button>
 
-                  <input
-                    type="file"
-                    ref={resumeRef}
-                    className="hidden"
-                    accept="application/pdf"
-                    onChange={changeResume}
-                  />
-                </>
-              )}
-            </div>
-          </div>
-          )}
+          <input
+            type="file"
+            ref={resumeRef}
+            className="hidden"
+            accept="application/pdf"
+            onChange={changeResume}
+          />
+        </>
+      )}
+    </div>
+  </div>
+)}
 
           {/*subcription  */}
-          {
-            isYourAccount && (
-              <>
-                {
-                  user.role === "jobseeker" && <div className="mt-8">
-                    <h2 className="text-lg font-semibold mt-4 flex items-center gap-2">
-                      <Crown size={20} className="text-blue-600" />
-                      subscription status
-                    </h2>
-                    <div className="p-6 rounded-lg bg-linear-to-br from-blue-50 to-purple-100 dark:from-blue-800-to-purple-800">
-                      {!user.subscription ? (<>
-                        <div className="flex items-center justify-between flex-wrap gap-4">
-                          <div>
-                            <p className="font-semibold text-lg mb-1">
-                              No Active Subscription
-                            </p>
-                            <p className="text-sm opacity-70">SubsCribe to Unlock Premium Features and Benefits</p>
-                          </div>
-                          <Button className="gap-2" onClick={() => router.push('/subscribe')}>
-                            <Crown size={18} />Subscribe Now
-                          </Button>
-                        </div>
-                      </>) :
-                        new Date(user.subscription).getTime() > Date.now() ?
-                          <div className="flex items-center justify-between flex-wrap gap-4 ">
-                            <div>
-                              <div className="flex items-center gap-2 mb-2 ">
-                                <CheckCircle2 size={20} className="text-green-600 " />
-                                <p className="font-semibold text-lg text-green-600">
-                                  Active Subcription
-                                </p>
-                              </div>
-                              <p className="text-sm opacity-70 ">
-                                Valid Untill :{""}
-                                {
-                                  new Date(user.subscription).toLocaleDateString(
-                                    "en-US", {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric"
-                                  }
-                                  )
-                                }
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-700 text-white font-medium">
-                              <CheckCircle2Icon size={18} />
-                              Subscribed
-                            </div>
-                          </div>
-                          : <>
-                            <div className="flex items-center justify-between flex-wrap gap-4">
-                              <div>
-                                <div className="flex items-center gap-3 mb-2">
-                                  <AlertTriangle size={20} className="text-red-600" />
-                                  <p className="font-semibold text-lg text-red-600">
-                                    Subscription Expired
-                                  </p>
-                                </div>
-                                <p className="text-sm opacity-70 ">
-                                  Expired on:{""}
-                                  {
-                                    new Date(user.subscription).toLocaleDateString(
-                                      "en-US", {
-                                      year: "numeric",
-                                      month: "long",
-                                      day: "numeric"
-                                    }
-                                    )
-                                  }
-                                </p>
-                              </div>
-                              <Button variant={"destructive"} className="gap-2 "
-                                onClick={() => router.push('/subscribe')}>
-                                <RefreshCcw size={18} />Renew Subcription
-                              </Button>
-                            </div>
-                          </>
-                      }
+          {/* {
+  isYourAccount && (
+    <>
+      {
+        user.role === "jobseeker" && <div className="mt-8">
+          <h2 className="text-lg font-semibold mt-4 flex items-center gap-2 text-slate-900 dark:text-slate-100">
+            <Crown size={20} className="text-blue-600 dark:text-blue-400" />
+            subscription status
+          </h2>
+          <div className="p-6 rounded-lg bg-linear-to-br from-blue-50 to-purple-100 dark:from-blue-950 dark:to-purple-950 border border-blue-100/50 dark:border-blue-900/20 text-slate-900 dark:text-slate-100">
+            {!user.subscription ? (<>
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div>
+                  <p className="font-semibold text-lg mb-1">
+                    No Active Subscription
+                  </p>
+                  <p className="text-sm opacity-70">SubsCribe to Unlock Premium Features and Benefits</p>
+                </div>
+                <Button className="gap-2" onClick={() => router.push('/subscribe')}>
+                  <Crown size={18} />Subscribe Now
+                </Button>
+              </div>
+            </>) :
+              new Date(user.subscription).getTime() > Date.now() ?
+                <div className="flex items-center justify-between flex-wrap gap-4 ">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2 ">
+                      <CheckCircle2 size={20} className="text-green-600 dark:text-green-400" />
+                      <p className="font-semibold text-lg text-green-600 dark:text-green-400">
+                        Active Subcription
+                      </p>
                     </div>
+                    <p className="text-sm opacity-70 ">
+                      Valid Untill :{""}
+                      {
+                        new Date(user.subscription).toLocaleDateString(
+                          "en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric"
+                          }
+                        )
+                      }
+                    </p>
                   </div>
-                }
-              </>
-            )
-          }
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-green-700 dark:bg-green-600 text-white font-medium">
+                    <CheckCircle2Icon size={18} />
+                    Subscribed
+                  </div>
+                </div>
+                : <>
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <AlertTriangle size={20} className="text-red-600 dark:text-red-400" />
+                        <p className="font-semibold text-lg text-red-600 dark:text-red-400">
+                          Subscription Expired
+                        </p>
+                      </div>
+                      <p className="text-sm opacity-70 ">
+                        Expired on:{""}
+                        {
+                          new Date(user.subscription).toLocaleDateString(
+                            "en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric"
+                            }
+                          )
+                        }
+                      </p>
+                    </div>
+                    <Button variant={"destructive"} className="gap-2 "
+                      onClick={() => router.push('/subscribe')}>
+                      <RefreshCcw size={18} />Renew Subcription
+                    </Button>
+                  </div>
+                </>
+            }
+          </div>
+        </div>
+      }
+    </>
+  )
+} */}
 
         </div>
       </Card>

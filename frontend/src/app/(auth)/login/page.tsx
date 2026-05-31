@@ -40,7 +40,7 @@ const Loginpage = () => {
         }
       );
 
-      toast.success(data.message);
+      toast.success("Login Successfull");
 
       Cookies.set("token", data.token, {
         expires: 15,
