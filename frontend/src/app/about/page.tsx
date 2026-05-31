@@ -83,15 +83,7 @@ const About = () => {
                 </Button>
               </Link>
 
-              <Link href="/contact">
-                <Button
-                  variant="outline"
-                  className="h-12 rounded-xl border-2 px-8 text-base transition-all duration-300 hover:scale-105 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30"
-                >
-                  Contact Us
-                </Button>
-              </Link>
-            </div>
+      </div>
           </div>
 
           {/* Right Image */}
