@@ -79,7 +79,7 @@ const Registerpage = () => {
         formData
       );
 
-      toast.success(data.message);
+      toast.success("Registration done Successfully");
 
       Cookies.set("token", data.token, {
         expires: 15,
@@ -100,11 +100,11 @@ const Registerpage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-white via-gray-50 to-gray-200 dark:from-black dark:via-gray-950 dark:to-gray-900 transition-colors duration-500">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-linear-to-br from-white via-gray-50 to-gray-200 dark:from-black dark:via-gray-950 dark:to-gray-900 transition-colors duration-500">
       <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-500">
         {/* Heading */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 transition-all">
+          <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-linear-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 transition-all">
             Join HireHeaven
           </h1>
 
