@@ -93,271 +93,214 @@ fileInputRef.current.value = "";
 }
 };
 const getScoreColor = (score: number) => {
-if (score >= 80) return "text-green-600";
-if (score >= 60) return "text-yellow-600";
-return "text-red-600";
+  if (score >= 80) return "text-emerald-500 dark:text-emerald-400";
+  if (score >= 60) return "text-amber-500 dark:text-amber-400";
+  return "text-rose-500 dark:text-rose-400";
 };
 const getScoreBgColor = (score: number) => {
-if (score >= 80) return "bg-green-100 dark:bg-green-900/30";
-if (score >= 60) return "bg-yellow-100 dark:bg-yellow-900/30";
-return "bg-red-100 dark:bg-red-900/30";
+  if (score >= 80) return "bg-emerald-500/5 border-emerald-500/20";
+  if (score >= 60) return "bg-amber-500/5 border-amber-500/20";
+  return "bg-rose-500/5 border-rose-500/20";
 };
 const getPriorityColor = (priority: string) => {
-if (priority === "high")
-
-return "bg-red-100 dark:bg-red-900/30 text-red-600 border-red-200 dark:border-red-800";
-if (priority === "medium")
-
-return "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 border-yellow-200 dark:border-yellow-800";
-
-return "bg-blue-100 dark:bg-blue-900/30 text-blue-600 border-blue-200 dark:border-blue-800";
-
+  if (priority === "high")
+    return "bg-rose-500/10 dark:bg-rose-500/10 text-rose-500 border-rose-500/20";
+  if (priority === "medium")
+    return "bg-amber-500/10 dark:bg-amber-500/10 text-amber-500 border-amber-500/20";
+  return "bg-indigo-500/10 dark:bg-indigo-500/10 text-indigo-500 border-indigo-500/20";
 };
+
 return (
-<div className="max-w-7xl mx-auto px-4 py-16 bg-secondary/30">
-<div className="text-center mb-12">
-<div
-
-className="inline-flex items-center gap-2 px-4 py-2 rounded-full border bg-red-
-50 dark:bg-red-950/30 mb-4"
-
->
-<FileCheck size={16} className="text-red-500" />
-<span className="text-sm font-medium">AI-Powered ATS Analysis</span>
-</div>
-<h2 className="text-3xl md:text-4xl font-bold mb-4">
-Optimize Your Resume for ATS
-</h2>
-<p className="text-lg opacity-70 max-w-2xl mx-auto mb-8">
-Get instant feedback on your resume compatibility with Applicant
-Tracking Systems
-</p>
-<Dialog open={open} onOpenChange={setOpen}>
-<DialogTrigger asChild>
-<Button size="lg" className="gap-2 h-12 px-8">
-<FileText size={18} />
-Analyze My Resume
-<ArrowRight size={18} />
-</Button>
-</DialogTrigger>
-<DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-{!response ? (
-<>
-<DialogHeader>
-<DialogTitle className="text-2xl flex items-center gap-2">
-<FileText className="text-red-500" />
-Upload Your Resume
-</DialogTitle>
-<DialogDescription>
-Upload your resume in PDF format to get an instant ATS
-compatibility analysis
-</DialogDescription>
-</DialogHeader>
-<div className="space-y-4 py-4">
-<div
-onClick={() => fileInputRef.current?.click()}
-
-className="border-2 border-dashed rounded-lg p-12 text-center cursor-
-pointer hover:border-blue-500 transition-colors"
-
->
-<div className="flex flex-col items-center gap-4">
-<div
-className="h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900/30
-flex items-center justify-center"
->
-<Upload size={32} className="text-blue-600" />
-</div>
-<div>
-<p className="font-medium mb-1">
-{file ? file.name : "Click to upload your resume"}
-</p>
-<p className="text-sm opacity-60">
-PDF format only, maximum 5MB
-</p>
-</div>
-{file && (
-<div className="flex items-center gap-2 text-green-600">
-<CheckCircle2 size={18} />
-<span className="text-sm font-medium">
-File uploaded successfully
-</span>
-</div>
-)}
-</div>
-</div>
-<input
-ref={fileInputRef}
-type="file"
-accept="application/pdf"
-onChange={handleFileSelect}
-className="hidden"
-/>
-<Button
-onClick={analyzeResume}
-disabled={loading || !file}
-className="w-full h-11 gap-2"
->
-{loading ? (
-<>
-<Loader2 size={18} className="animate-spin" />
-Analyzing Your Resume...
-</>
-) : (
-<>
-<Zap size={18} />
-
-Analyze Resume
-</>
-)}
-</Button>
-</div>
-</>
-) : (
-<>
-<DialogHeader>
-<DialogTitle className="text-2xl flex items-center gap-2">
-<FileCheck className="text-red-500" />
-Your Resume Analysis
-</DialogTitle>
-</DialogHeader>
-<div className="space-y-6 py-4">
-{/* Overall Score */}
-<div
-className={`p-6 rounded-lg ${getScoreBgColor(
-response.atsScore
-)} border-2`}
->
-<div className="text-center">
-<p className="text-sm font-medium opacity-70 mb-2">
-ATS Compatibility Score
-</p>
-<div
-className={`text-6xl font-bold ${getScoreColor(
-response.atsScore
-)}`}
->
-{response.atsScore}
-</div>
-<p className="text-sm opacity-70 mt-2">out of 100</p>
-</div>
-</div>
-{/* Summary */}
-<div
-className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/30 border
-border-blue-200 dark:border-blue-800"
->
-<p className="text-sm leading-relaxed">
-{response.summary}
-</p>
-</div>
-{/* Score Breakdown */}
-<div>
-<h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-<TrendingUp size={20} className="text-red-500" />
-Detailed Score Breakdown
-</h3>
-
-<div className="grid md:grid-cols-2 gap-3">
-{Object.entries(response.scoreBreakdown).map(
-([key, value]) => (
-<div key={key} className="p-4 rounded-lg border">
-<div className="flex items-center justify-between mb-2">
-<p className="font-semibold capitalize">{key}</p>
-<span
-className={`text-lg font-bold ${getScoreColor(
-value.score
-)}`}
->
-{value.score}%
-</span>
-</div>
-<p className="text-xs opacity-70">
-{value.feedback}
-</p>
-</div>
-)
-)}
-</div>
-</div>
-{/* Strengths */}
-<div
-className="p-4 rounded-lg bg-green-50 dark:bg-green-950/30 border
-border-green-200 dark:border-green-800"
->
-<h3 className="font-semibold mb-3 flex items-center gap-2">
-<CheckCircle2 size={18} className="text-green-600" />
-What Your Resume Does Well
-</h3>
-<ul className="space-y-2">
-{response.strengths.map((strength, index) => (
-<li
-key={index}
-className="text-sm flex items-start gap-2"
->
-<span className="text-green-600 mt-0.5">✓</span>
-<span>{strength}</span>
-</li>
-))}
-</ul>
-</div>
-{/* Suggestions */}
-<div>
-<h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-<AlertTriangle size={20} className="text-red-500" />
-Recommendations for Improvement
-</h3>
-<div className="space-y-3">
-{response.suggestions.map((suggestion, index) => (
-
-<div key={index} className="p-4 rounded-lg border">
-<div className="flex items-start justify-between gap-3 mb-2">
-<h4 className="font-semibold text-sm">
-{suggestion.category}
-</h4>
-<span
-className={`text-xs px-2 py-1 rounded-full border
-${getPriorityColor(suggestion.priority)}`}
->
-{suggestion.priority}
-</span>
-</div>
-<div className="space-y-2 text-sm">
-<div>
-<span className="font-medium opacity-70">
-Issue:{" "}
-</span>
-<span className="opacity-80">
-{suggestion.issue}
-</span>
-</div>
-<div>
-<span className="font-medium opacity-70">
-Fix:{" "}
-</span>
-<span className="opacity-80">
-{suggestion.recommendation}
-</span>
-</div>
-</div>
-</div>
-))}
-</div>
-</div>
-<Button
-onClick={resetDialog}
-variant="outline"
-className="w-full"
->
-Analyze Another Resume
-</Button>
-</div>
-</>
-)}
-</DialogContent>
-</Dialog>
-</div>
-
+<div className="max-w-7xl mx-auto px-4 py-16 border-t border-border/30">
+  <div className="text-center mb-12 animate-fade-in">
+    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 mb-4 animate-float">
+      <FileCheck size={14} className="text-primary animate-pulse" />
+      <span className="text-xs font-semibold uppercase tracking-wider text-primary">AI-Powered ATS Analysis</span>
+    </div>
+    <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight text-foreground bg-gradient-to-r from-primary via-indigo-500 to-purple-600 bg-clip-text text-transparent">
+      Optimize Your Resume for ATS
+    </h2>
+    <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+      Get instant feedback on your resume compatibility with Applicant Tracking Systems.
+    </p>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="lg" className="gap-2.5 h-12 px-8 rounded-xl bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-600/95 text-white font-medium shadow-md shadow-primary/10 transition-all hover:scale-[1.03] active:scale-[0.97] group">
+          <FileText size={16} className="text-white" />
+          Analyze My Resume
+          <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border/80 bg-card/95 backdrop-blur-md shadow-2xl">
+        {!response ? (
+          <>
+            <DialogHeader className="mb-4">
+              <DialogTitle className="text-2xl font-bold flex items-center gap-2 text-foreground">
+                <FileText className="text-primary" />
+                Upload Your Resume
+              </DialogTitle>
+              <DialogDescription className="text-muted-foreground">
+                Upload your resume in PDF format to get an instant ATS compatibility analysis.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-5 py-2">
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer border-border hover:border-primary bg-background/30 hover:bg-primary/5 transition-all duration-300 shadow-xs"
+              >
+                <div className="flex flex-col items-center gap-4">
+                  <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary transition-transform duration-300 group-hover:scale-110">
+                    <Upload size={28} />
+                  </div>
+                  <div>
+                    <p className="font-bold text-foreground text-sm mb-1">
+                      {file ? file.name : "Click to upload your resume"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      PDF format only, maximum 5MB
+                    </p>
+                  </div>
+                  {file && (
+                    <div className="flex items-center gap-2 text-emerald-500 font-semibold text-sm">
+                      <CheckCircle2 size={16} />
+                      <span>File ready for analysis</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <Button
+                onClick={analyzeResume}
+                disabled={loading || !file}
+                className="w-full h-11 gap-2 rounded-xl bg-primary hover:bg-primary/95 text-white font-medium transition-all shadow-md shadow-primary/10"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Analyzing Your Resume...
+                  </>
+                ) : (
+                  <>
+                    <Zap size={18} />
+                    Analyze Resume
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <div className="animate-fade-in">
+            <DialogHeader className="mb-6">
+              <DialogTitle className="text-2xl font-bold flex items-center gap-2 text-foreground">
+                <FileCheck className="text-primary" />
+                Your Resume Analysis
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6 py-2">
+              {/* Overall Score */}
+              <div className={`p-6 rounded-2xl border ${getScoreBgColor(response.atsScore)} shadow-xs`}>
+                <div className="text-center">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                    ATS Compatibility Score
+                  </p>
+                  <div className={`text-6xl font-black ${getScoreColor(response.atsScore)}`}>
+                    {response.atsScore}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">out of 100</p>
+                </div>
+              </div>
+              
+              {/* Summary */}
+              <div className="p-5 rounded-2xl bg-primary/5 border border-primary/10 text-sm leading-relaxed text-muted-foreground">
+                {response.summary}
+              </div>
+              
+              {/* Score Breakdown */}
+              <div>
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-foreground">
+                  <TrendingUp size={18} className="text-primary" />
+                  Detailed Score Breakdown
+                </h3>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {Object.entries(response.scoreBreakdown).map(([key, value]) => (
+                    <div key={key} className="p-4 rounded-xl border border-border/85 bg-card/50 shadow-xs">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="font-bold text-sm text-foreground capitalize">{key}</p>
+                        <span className={`text-sm font-bold ${getScoreColor(value.score)}`}>
+                          {value.score}%
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {value.feedback}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Strengths */}
+              <div className="p-5 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 text-emerald-800 dark:text-emerald-400">
+                <h3 className="font-bold text-sm mb-3 flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle2 size={16} />
+                  What Your Resume Does Well
+                </h3>
+                <ul className="space-y-2 text-xs">
+                  {response.strengths.map((strength, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-emerald-500 font-bold mt-0.5">✓</span>
+                      <span>{strength}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              {/* Suggestions */}
+              <div>
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-foreground">
+                  <AlertTriangle size={18} className="text-primary animate-pulse" />
+                  Recommendations for Improvement
+                </h3>
+                <div className="space-y-3.5">
+                  {response.suggestions.map((suggestion, index) => (
+                    <div key={index} className="p-5 rounded-2xl border border-border/80 bg-card shadow-xs">
+                      <div className="flex items-start justify-between gap-3 mb-2.5">
+                        <h4 className="font-bold text-sm text-foreground">
+                          {suggestion.category}
+                        </h4>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider ${getPriorityColor(suggestion.priority)}`}>
+                          {suggestion.priority}
+                        </span>
+                      </div>
+                      <div className="space-y-1.5 text-xs text-muted-foreground leading-relaxed">
+                        <div>
+                          <span className="font-semibold text-foreground mr-1.5">Issue:</span>
+                          <span>{suggestion.issue}</span>
+                        </div>
+                        <div>
+                          <span className="font-semibold text-foreground mr-1.5">Fix:</span>
+                          <span>{suggestion.recommendation}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <Button onClick={resetDialog} variant="outline" className="w-full rounded-xl h-11 border border-border hover:bg-accent/40 text-sm font-semibold transition-all">
+                Analyze Another Resume
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  </div>
 </div>
 );
 };

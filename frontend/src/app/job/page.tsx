@@ -109,33 +109,38 @@ const JobsPage = () => {
   const hasActiveFilters = Boolean(title || location);
 
   return (
-    <div className="min-h-screen bg-secondary/30">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background Glow */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+        <div className="absolute top-10 left-10 h-[300px] w-[300px] bg-primary/5 rounded-full blur-[100px] animate-pulse-glow" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-8 relative z-10 animate-fade-in">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+          <div className="flex items-center justify-between flex-wrap gap-4 mb-5">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">
+              <h1 className="text-3xl md:text-5xl font-black mb-2 tracking-tight text-foreground">
                 Explore{" "}
-                <span className="text-red-500">
-                  opportunities
+                <span className="bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent">
+                  Opportunities
                 </span>
               </h1>
 
-              <p className="text-base opacity-70">
-                {jobs.length} {jobs.length === 1 ? "job" : "jobs"}
+              <p className="text-sm text-muted-foreground font-semibold uppercase tracking-wider">
+                {jobs.length} {jobs.length === 1 ? "job available" : "jobs available"}
               </p>
             </div>
 
             <Button
-              className="gap-2 h-11"
+              className="gap-2 h-11 rounded-xl bg-primary hover:bg-primary/95 text-white font-bold transition-all shadow-xs"
               onClick={clickEvent}
             >
-              <Filter size={18} />
+              <Filter size={16} />
               Filters
 
               {hasActiveFilters && (
-                <span className="ml-1 px-2 py-0.5 rounded-full bg-red-500 text-white text-xs">
+                <span className="ml-1 px-2 py-0.5 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold uppercase tracking-wider shadow-xs">
                   Active
                 </span>
               )}
@@ -144,78 +149,78 @@ const JobsPage = () => {
 
           {/* Active Filters */}
           {hasActiveFilters && (
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm opacity-70">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Active Filters:
               </span>
 
               {title && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 text-sm">
-                  <Search size={14} />
+                <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold uppercase tracking-wider shadow-xs animate-fade-in">
+                  <Search size={12} />
 
-                  {title}
+                  <span>{title}</span>
 
                   <button
                     onClick={() => setTitle("")}
-                    className="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition"
+                    className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
                   >
-                    <X size={14} />
+                    <X size={12} />
                   </button>
                 </div>
               )}
 
               {location && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 text-sm">
-                  <MapPin size={14} />
+                <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold uppercase tracking-wider shadow-xs animate-fade-in">
+                  <MapPin size={12} />
 
-                  {location}
+                  <span>{location}</span>
 
                   <button
                     onClick={() => setLocation("")}
-                    className="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition"
+                    className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
                   >
-                    <X size={14} />
+                    <X size={12} />
                   </button>
                 </div>
               )}
             </div>
           )}
-
-          {/* Jobs Section */}
-          {loading ? (
-            <Loading />
-          ) : (
-            <>
-              {jobs.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                  {jobs.map((job) => (
-                    <JobCard
-                      key={job.job_id}
-                      job={job}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-16">
-                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-800 mb-4">
-                    <Briefcase
-                      size={40}
-                      className="opacity-40"
-                    />
-                  </div>
-
-                  <h3 className="text-xl font-semibold mb-2">
-                    No Jobs Found
-                  </h3>
-
-                  <p className="opacity-70 text-sm">
-                    Try changing your filters
-                  </p>
-                </div>
-              )}
-            </>
-          )}
         </div>
+
+        {/* Jobs Section */}
+        {loading ? (
+          <Loading />
+        ) : (
+          <>
+            {jobs.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                {jobs.map((job) => (
+                  <JobCard
+                    key={job.job_id}
+                    job={job}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-20 border border-dashed rounded-2xl bg-card/45 backdrop-blur-xs max-w-xl mx-auto shadow-xs animate-fade-in">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4 animate-float">
+                  <Briefcase
+                    size={28}
+                  />
+                </div>
+
+                <h3 className="text-lg font-bold mb-1 text-foreground">
+                  No Jobs Found
+                </h3>
+
+                <p className="text-xs text-muted-foreground">
+                  Try changing your search keywords or location filters.
+                </p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
         {/* Filter Dialog */}
         <Dialog>
@@ -328,7 +333,6 @@ const JobsPage = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </div>
   );
 };
 

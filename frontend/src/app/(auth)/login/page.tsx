@@ -61,28 +61,33 @@ const Loginpage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-white via-gray-50 to-gray-200 dark:from-black dark:via-gray-950 dark:to-gray-900 transition-colors duration-500">
-      <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-500">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-background relative overflow-hidden">
+      {/* Background Glow */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-primary/10 blur-[130px] animate-pulse-glow" />
+      </div>
+
+      <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-500 z-10">
         
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 transition-all">
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2 text-foreground">
             Welcome back to HireHeaven
           </h1>
-          <p className="text-sm opacity-70">Sign in to continue your journey</p>
+          <p className="text-sm text-muted-foreground">Sign in to continue your journey</p>
         </div>
 
         {/* Card */}
-        <div className="border border-gray-200 dark:border-gray-800 rounded-2xl p-8 shadow-xl hover:shadow-2xl dark:shadow-black/50 backdrop-blur-md bg-white/60 dark:bg-black/60 transition-all duration-300 hover:-translate-y-1">
+        <div className="border border-border/80 rounded-2xl p-8 shadow-xl dark:shadow-black/50 backdrop-blur-xl bg-card/65 transition-all duration-300 hover:border-primary/30">
           <form onSubmit={submithandler} className="space-y-5">
             
             {/* Email Input */}
             <div className="space-y-2 group">
-              <Label htmlFor="email" className="text-sm font-medium transition-colors group-hover:text-blue-500 dark:group-hover:text-blue-400">
+              <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-focus-within:text-primary transition-colors">
                 Email Address
               </Label>
               <div className="relative">
-                <Mail className="icon-style transition-transform duration-300 group-hover:scale-110" />
+                <Mail className="icon-style transition-transform duration-300 group-hover:scale-105" />
                 <Input
                   id="email"
                   type="email"
@@ -90,18 +95,18 @@ const Loginpage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="pl-10 h-11 bg-background/50 backdrop-blur-sm transition-all duration-200 hover:border-gray-400 focus:ring-2 focus:ring-blue-500"
+                  className="pl-10 h-11 rounded-xl bg-background/50 focus-visible:ring-primary focus-visible:border-primary"
                 />
               </div>
             </div>
 
             {/* Password Input */}
             <div className="space-y-2 group">
-              <Label htmlFor="password" className="text-sm font-medium transition-colors group-hover:text-blue-500 dark:group-hover:text-blue-400">
+              <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground group-focus-within:text-primary transition-colors">
                 Password
               </Label>
               <div className="relative">
-                <Lock className="icon-style transition-transform duration-300 group-hover:scale-110" />
+                <Lock className="icon-style transition-transform duration-300 group-hover:scale-105" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -109,18 +114,18 @@ const Loginpage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="pl-10 pr-10 h-11 bg-background/50 backdrop-blur-sm transition-all duration-200 hover:border-gray-400 focus:ring-2 focus:ring-blue-500"
+                  className="pl-10 pr-10 h-11 rounded-xl bg-background/50 focus-visible:ring-primary focus-visible:border-primary"
                 />
 
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 opacity-70 hover:opacity-100 transition-opacity"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {showPassword ? (
-                    <EyeOff size={18} className="hover:scale-110 transition-transform" />
+                    <EyeOff size={16} />
                   ) : (
-                    <Eye size={18} className="hover:scale-110 transition-transform" />
+                    <Eye size={16} />
                   )}
                 </button>
               </div>
@@ -128,7 +133,7 @@ const Loginpage = () => {
 
             {/* Forgot Password Link */}
             <div className="flex items-center justify-end">
-              <Link href={"/forgot"} className="text-sm text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-all duration-200">
+              <Link href={"/forgot"} className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors">
                 Forgot Password?
               </Link>
             </div>
@@ -136,19 +141,19 @@ const Loginpage = () => {
             {/* Submit Button */}
             <Button
               disabled={btnLoading}
-              className="w-full h-11 group transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/25 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
+              className="w-full h-11 rounded-xl bg-gradient-to-r from-primary to-indigo-600 hover:from-primary/95 hover:to-indigo-600/95 text-white font-medium shadow-md shadow-primary/10 transition-all hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
             >
               {btnLoading ? "Signing in..." : "Sign in"}
-              <ArrowRight size={18} className="transition-transform duration-300 group-hover:translate-x-1" />
+              <ArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-0.5" />
             </Button>
           </form>
 
           {/* Footer Link */}
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
-            <p className="text-center text-sm">
-              Don't have An Account?{" "}
-              <Link href={"/register"} className="text-blue-500 font-medium hover:text-blue-600 dark:hover:text-blue-400 hover:underline transition-all duration-200">
-                CREATE a New Account
+          <div className="mt-6 pt-6 border-t border-border/40">
+            <p className="text-center text-xs text-muted-foreground">
+              Don't have an account?{" "}
+              <Link href={"/register"} className="text-primary font-bold hover:underline transition-colors">
+                Create a new account
               </Link>
             </p>
           </div>

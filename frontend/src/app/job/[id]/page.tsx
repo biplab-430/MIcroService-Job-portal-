@@ -138,44 +138,49 @@ const Jobpage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-secondary/30">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background Glow */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+        <div className="absolute top-10 right-10 h-[300px] w-[300px] bg-primary/5 rounded-full blur-[100px] animate-pulse-glow" />
+      </div>
+
       {loading ? (
         <Loading />
       ) : (
         <>
           {job && (
-            <div className="max-w-5xl mx-auto px-4 py-8">
+            <div className="max-w-5xl mx-auto px-4 py-8 relative z-10 animate-fade-in">
               <Button
                 variant={"ghost"}
-                className="mb-6 gap-2"
+                className="mb-6 gap-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/40 border border-transparent hover:border-border/30 transition-all"
                 onClick={() => router.back()}
               >
-                <ArrowLeft size={18} />
+                <ArrowLeft size={16} />
                 Back to Jobs
               </Button>
 
-              <Card className="overflow-hidden shadow-lg border-2 mb-6">
-                <div className="bg-blue-600 p-8 border-b">
+              <Card className="overflow-hidden rounded-2xl border border-border/80 bg-card/65 backdrop-blur-xs shadow-xl mb-6">
+                <div className="bg-gradient-to-r from-primary via-indigo-600 to-purple-700 p-8 border-b border-border/20">
                   <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
                         <span
-                          className={`px-3 py-1.5 rounded-full text-sm font-medium ${job.is_active
-                              ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
-                              : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300"
+                          className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${job.is_active
+                              ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
+                              : "bg-rose-500/10 text-rose-300 border border-rose-500/20"
                             }`}
                         >
                           {job.is_active ? "Open" : "Closed"}
                         </span>
                       </div>
 
-                      <h1 className="text-3xl md:text-4xl font-bold mb-4 text-white">
+                      <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 text-white">
                         {job.title}
                       </h1>
 
-                      <div className="flex items-center gap-2 text-base opacity-70 mb-2 text-white">
-                        <Building2 size={18} />
-                        <span>Company Name</span>
+                      <div className="flex items-center gap-2 text-sm text-white/80 font-medium">
+                        <Building2 size={16} />
+                        <span>{job.company_name}</span>
                       </div>
                     </div>
 
@@ -183,12 +188,10 @@ const Jobpage = () => {
                       <div className="shrink-0">
                         {applied ? (
                           <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-                            <div className="flex items-center gap-2 px-6 py-3 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-medium">
-                              <CheckCircle2 size={18} />
+                            <div className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-bold text-sm shadow-xs animate-fade-in">
+                              <CheckCircle2 size={16} />
                               Already Applied
                             </div>
-
-                           
                           </div>
                         ) : (
                           <>
@@ -198,10 +201,9 @@ const Jobpage = () => {
                                   applyJobHandler(job.job_id)
                                 }
                                 disabled={btnLoading}
-                                className="gap-2 h-12 px-8"
+                                className="gap-2 h-11 px-6 rounded-xl bg-white hover:bg-white/90 text-primary font-bold shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
                               >
-                                <Briefcase size={18} />
-
+                                <Briefcase size={16} />
                                 {btnLoading
                                   ? "Applying..."
                                   : "Easy Apply"}
@@ -214,52 +216,52 @@ const Jobpage = () => {
                   </div>
                 </div>
                 {/* job details */}
-                <div className="p-8 ">
+                <div className="p-8">
                   <div className="grid md:grid-cols-3 gap-6 mb-8">
-                    <div className="flex items-center gap-3 p-4 rounded-lg border bg-background">
-                      <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
-                        <MapPin size={20} className="text-blue-600" />
+                    <div className="flex items-center gap-3.5 p-4 rounded-2xl border border-border bg-card/45 backdrop-blur-xs shadow-xs hover:border-primary/20 transition-all duration-300">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        <MapPin size={20} />
                       </div>
-                      <div className="">
-                        <p className="text-xs opacity-70 font-medium mb-1">
-                          Loaction
+                      <div>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">
+                          Location
                         </p>
-                        <p className="font-semibold">{job.location}</p>
+                        <p className="font-bold text-foreground text-sm">{job.location}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 p-4 rounded-lg border bg-background">
-                      <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
-                        <DollarSign size={20} className="text-blue-600" />
+                    <div className="flex items-center gap-3.5 p-4 rounded-2xl border border-border bg-card/45 backdrop-blur-xs shadow-xs hover:border-primary/20 transition-all duration-300">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        <DollarSign size={20} />
                       </div>
-                      <div className="">
-                        <p className="text-xs opacity-70 font-medium mb-1">
-                          salary
+                      <div>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">
+                          Salary
                         </p>
-                        <p className="font-semibold">{job.salary}P.A</p>
+                        <p className="font-bold text-foreground text-sm">{job.salary} P.A.</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 p-4 rounded-lg border bg-background">
-                      <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
-                        <User size={20} className="text-blue-600" />
+                    <div className="flex items-center gap-3.5 p-4 rounded-2xl border border-border bg-card/45 backdrop-blur-xs shadow-xs hover:border-primary/20 transition-all duration-300">
+                      <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        <User size={20} />
                       </div>
-                      <div className="">
-                        <p className="text-xs opacity-70 font-medium mb-1">
+                      <div>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">
                           Openings
                         </p>
-                        <p className="font-semibold">{job.openings} Positions</p>
+                        <p className="font-bold text-foreground text-sm">{job.openings} Positions</p>
                       </div>
                     </div>
                   </div>
                   {/* job description */}
                   <div className="space-y-4">
-                    <h2 className="text-2xl font-bold flex items-center gap-2">
-                      <Briefcase size={24} className="text-blue-600" />Job Description
+                    <h2 className="text-xl font-bold flex items-center gap-2 text-foreground">
+                      <Briefcase size={20} className="text-primary" />Job Description
                     </h2>
 
-                    <div className="p-6 rounded-lg bg-secondary border">
-                      <p className="text-base leading-relaxed whitespace-pre-line">
+                    <div className="p-6 rounded-2xl bg-secondary/35 border border-border/80">
+                      <p className="text-sm md:text-base leading-relaxed text-muted-foreground whitespace-pre-line">
                         {job.description}
                       </p>
                     </div>
