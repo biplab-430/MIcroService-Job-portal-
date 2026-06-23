@@ -7,7 +7,10 @@ const app = express();
 
 // --- UPDATED CORS CONFIGURATION ---
 app.use(cors({
-    origin: "https://m-icro-service-job-portal.vercel.app", // Your Vercel frontend URL
+    origin: [
+    "http://localhost:3000", 
+    "https://m-icro-service-job-portal.vercel.app"
+  ],
     credentials: true, // This allows the JWT cookies to be sent and saved
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 }));

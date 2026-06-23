@@ -7,7 +7,7 @@ import ResumeBuilder from '@/components/ResumeBuilder'
 import { useAppData } from '@/context/AppContext'
 
 const Home = () => {
-  const { loading } = useAppData()
+  const { loading, isAuth } = useAppData()
   
   if (loading) return <Loading />
   
@@ -16,8 +16,7 @@ const Home = () => {
       <Hero />
       <CarrerGuide />
       <ResumeAnalyzer />
-      {/* Your new Resume Builder section
-      <ResumeBuilder /> */}
+      {isAuth && <ResumeBuilder />}
     </div>
   )
 }

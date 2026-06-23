@@ -8,7 +8,10 @@ const app = express();
 
 // --- UPDATED CORS CONFIGURATION ---
 app.use(cors({
-    origin: "https://m-icro-service-job-portal.vercel.app", // Your Vercel frontend URL
+   origin: [
+    "http://localhost:3000", 
+    "https://m-icro-service-job-portal.vercel.app"
+  ],
     credentials: true, // Allows your frontend to securely fetch user profiles and send cookies
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
 }));
