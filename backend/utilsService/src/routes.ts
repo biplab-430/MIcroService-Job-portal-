@@ -52,6 +52,7 @@ import { AuthenticatedRequest, isAuth } from "./middleware/auth.js";
 import { sql } from "./utilis/db.js";
 import puppeteer from "puppeteer-core";
 import { generateResumeHTML } from "./utilis/generateResumeHTML.js";
+import { generateWithFallback } from "./utilis/aiFallback.js";
 dotenv.config()
 
 
@@ -107,18 +108,12 @@ Mastery', 'DevOps & Cloud').",
 ]
 }
 `;
-const response = await ai.models.generateContent({
-  model: "gemini-2.5-flash",
-  contents: prompt,
-  config: {
-    responseMimeType: "application/json",
-  },
-});
+const resultText = await generateWithFallback("", prompt);
 
 let jsonResponse;
 
  try {
-  const rawText=response.text?.replace(/```json/g,"").replace(/```/g,"").trim()
+  const rawText = resultText.replace(/```json/g,"").replace(/```/g,"").trim()
 if(!rawText){
   throw new Error("ai did not return a valid response.");
 }
@@ -126,7 +121,7 @@ jsonResponse=JSON.parse(rawText);
  } catch (error) {
     return res.status(500).json({
       message:"ai-returned response that not valid json",
-      rawResponse:response.text,
+      rawResponse:resultText,
     })
  }
 
@@ -449,6 +444,7 @@ router.post(
 
       // Launch browser
       const browser = await puppeteer.launch({
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
         headless: true,
         args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
       });

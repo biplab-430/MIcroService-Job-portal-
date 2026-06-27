@@ -15,6 +15,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import toast from "react-hot-toast";
+import Cookies from "js-cookie";
 
 
 
@@ -108,11 +109,17 @@ const ResumeBuilder = () => {
         achievements: formData.achievements.split("\n").filter(Boolean),
       };
 
+      const token = Cookies.get("token");
       // Ensure your Axios instance is sending credentials (cookies/tokens) for isAuth
       const { data } = await axios.post(
         `${utils_service}/api/utilsService/create-resume`, 
         payload,
-        { withCredentials: true } 
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          withCredentials: true 
+        } 
       );
 
       setGeneratedResume(data.resume);
@@ -134,11 +141,15 @@ const ResumeBuilder = () => {
     
     setDownloading(true);
     try {
+      const token = Cookies.get("token");
       const response = await axios.post(
         `${utils_service}/api/utilsService/download-resume`,
         { resumeData: generatedResume },
         { 
           responseType: "blob", // CRITICAL: This tells axios to expect a file blob
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
           withCredentials: true 
         }
       );
