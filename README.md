@@ -1,15 +1,18 @@
 # 🏢 HireHeaven — Microservices Job Portal
+
 **Live Demo:** [m-icro-service-job-portal.vercel.app](https://m-icro-service-job-portal.vercel.app)
-> A **production-grade, full-stack job portal** built with a microservices architecture — featuring real-time follow-gated chat, AI-powered career tools, Kafka event streaming, Redis caching, MongoDB + PostgreSQL polyglot persistence, and a Next.js 16 frontend.
+
+> A **production-grade, full-stack job portal** built with a microservices architecture — featuring real-time follow-gated chat, AI-powered career tools with multi-model fallback, Kafka event streaming on Aiven, Redis caching, MongoDB + PostgreSQL polyglot persistence, and a Next.js frontend.
 
 [![Node.js](https://img.shields.io/badge/Node.js-≥19-339933?logo=nodedotjs)](https://nodejs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript)](https://typescriptlang.org)
-[![Next.js](https://img.shields.io/badge/Next.js-16.2.6-black?logo=nextdotjs)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://typescriptlang.org)
+[![Next.js](https://img.shields.io/badge/Next.js-15+-black?logo=nextdotjs)](https://nextjs.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-4169E1?logo=postgresql)](https://neon.tech)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb)](https://mongodb.com)
 [![Redis](https://img.shields.io/badge/Redis-Upstash-DC382D?logo=redis)](https://upstash.com)
-[![Kafka](https://img.shields.io/badge/Kafka-KafkaJS-231F20?logo=apachekafka)](https://kafka.apache.org)
+[![Kafka](https://img.shields.io/badge/Kafka-Aiven-231F20?logo=apachekafka)](https://aiven.io)
 [![Socket.IO](https://img.shields.io/badge/Socket.IO-4.8-010101?logo=socketdotio)](https://socket.io)
+[![Docker](https://img.shields.io/badge/Docker-Alpine-2496ED?logo=docker)](https://docker.com)
 
 ---
 
@@ -24,13 +27,14 @@
 - [API Reference](#api-reference)
 - [Database Design](#database-design)
 - [Real-time System](#real-time-system)
-- [AI Features](#ai-features)
+- [AI Features — Technical Deep Dive](#ai-features--technical-deep-dive)
 - [Kafka Event Flow](#kafka-event-flow)
 - [Inter-Service Communication Map](#inter-service-communication-map)
 - [Why Microservices Over Monolith?](#why-microservices-over-monolith)
 - [Polyglot Persistence](#polyglot-persistence)
 - [Deployment](#deployment)
 - [Docker Compose](#docker-compose)
+- [Production Readiness](#production-readiness)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -45,7 +49,7 @@ HireHeaven is split into **5 independent backend microservices** and **1 Next.js
 ║                           HireHeaven Platform                                  ║
 ║                                                                                ║
 ║  ┌──────────────────────────────────────────────────────────────────────────┐  ║
-║  │              Frontend — Next.js 16 App Router  ( :3000 )                 │  ║
+║  │              Frontend — Next.js App Router  ( :3000 )                    │  ║
 ║  │                                                                          │  ║
 ║  │  /login  /register  /forgot  /reset  /job  /account/[id]  /company/[id] │  ║
 ║  │  /messages  /search  /followers  /following  /about                      │  ║
@@ -68,17 +72,18 @@ HireHeaven is split into **5 independent backend microservices** and **1 Next.js
 ║              ┌────────────────────┼─────────────────────┐                       ║
 ║              ▼                    ▼                     ▼                        ║
 ║   ┌─────────────────┐  ┌────────────────┐  ┌───────────────────────────┐        ║
-║   │  Neon PostgreSQL│  │ MongoDB Atlas  │  │   Apache Kafka            │        ║
-║   │  (shared schema)│  │ (chat only)    │  │   topic: "send-mail"      │        ║
-║   │                 │  │                │  │   Auth  ──▶ Utils ──▶ Gmail│        ║
-║   │  users          │  │  conversations │  │   Job   ──▶ Utils ──▶ Gmail│        ║
-║   │  skills         │  │  messages      │  └───────────────────────────┘        ║
-║   │  user_skills    │  │  notifications │                                        ║
-║   │  followers      │  └────────────────┘  ┌───────────────────────────┐        ║
-║   │  companies      │                       │   Redis (Upstash TLS)     │        ║
-║   │  jobs           │                       │   forgot:<email>  (15m)   │        ║
-║   │  applications   │                       │   user_socket:<id>        │        ║
-║   └─────────────────┘                       │   chat:<convId>  (50 msg) │        ║
+║   │  Neon PostgreSQL│  │ MongoDB Atlas  │  │  Apache Kafka (Aiven)     │        ║
+║   │  (shared schema)│  │ (chat only)    │  │  topic: "send-mail"       │        ║
+║   │                 │  │                │  │  RF=3, 1 partition        │        ║
+║   │  users          │  │  conversations │  │  Auth  ──▶ Utils ──▶ Gmail│        ║
+║   │  skills         │  │  messages      │  │  Job   ──▶ Utils ──▶ Gmail│        ║
+║   │  user_skills    │  │  notifications │  └───────────────────────────┘        ║
+║   │  followers      │  └────────────────┘                                        ║
+║   │  companies      │                       ┌───────────────────────────┐        ║
+║   │  jobs           │                       │   Redis (Upstash TLS)     │        ║
+║   │  applications   │                       │   forgot:<email>  (15m)   │        ║
+║   └─────────────────┘                       │   user_socket:<id>        │        ║
+║                                             │   chat:<convId>  (50 msg) │        ║
 ║                                             └───────────────────────────┘        ║
 ╚══════════════════════════════════════════════════════════════════════════════════╝
 ```
@@ -89,12 +94,12 @@ HireHeaven is split into **5 independent backend microservices** and **1 Next.js
 
 | Service | Port | Core Responsibility | Key Tech |
 |---|---|---|---|
-| **Auth Service** | 5000 | Register, login, JWT issuance, forgot/reset password | bcrypt, JWT, Kafka producer, Redis |
+| **Auth Service** | 5001 | Register, login, JWT issuance, forgot/reset password | bcrypt, JWT, Kafka producer (Aiven), Redis |
 | **User Service** | 5003 | User profiles, skills, job applications, follow graph | Neon PostgreSQL, Axios → Utils |
-| **Job Service** | 5002 | Companies, job postings, recruiter dashboards, application status | Neon PostgreSQL, Kafka producer |
-| **Utils Service** | 5001 | File uploads, AI tools, email dispatch | Cloudinary, Gemini AI, Puppeteer, Nodemailer, Kafka consumer |
+| **Job Service** | 5002 | Companies, job postings, recruiter dashboards, application status | Neon PostgreSQL, Kafka producer (Aiven) |
+| **Utils Service** | 5005 | File uploads, AI tools (multi-model fallback), PDF generation, email dispatch | Cloudinary, Gemini AI, Puppeteer Core, Nodemailer, Kafka consumer |
 | **RealTime Service** | 5004 | Follow-gated real-time chat with presence and read receipts | Socket.IO, MongoDB Atlas, Redis, Neon PostgreSQL |
-| **Frontend** | 3000 | Complete user interface | Next.js 16, React 19, Tailwind CSS, shadcn/ui, Socket.IO client |
+| **Frontend** | 3000 | Complete user interface | Next.js App Router, React, Tailwind CSS v4, shadcn/ui, Socket.IO client |
 
 
 
@@ -105,38 +110,38 @@ HireHeaven is split into **5 independent backend microservices** and **1 Next.js
 | Category | Technology | Version | Used By |
 |---|---|---|---|
 | Runtime | Node.js | ≥ 19 | All |
-| Language | TypeScript | 6.0 | All |
-| Framework | Express | 5.2 | All |
-| Primary DB | Neon PostgreSQL (`@neondatabase/serverless`) | 1.1 | Auth, User, Job, Utils, RealTime |
-| Message DB | MongoDB Atlas (Mongoose) | 9.6 | RealTime |
-| Cache | Redis (Upstash TLS) | 5.12 | Auth, RealTime |
-| Message Broker | Apache Kafka (KafkaJS) | 2.2 | Auth, Job (produce) · Utils (consume) |
-| Auth | jsonwebtoken | 9.0 | All |
-| Password Hash | bcrypt | 6.0 | Auth |
+| Language | TypeScript | 5 | All |
+| Framework | Express | 5.x | All |
+| Primary DB | Neon PostgreSQL (`@neondatabase/serverless`) | latest | Auth, User, Job, Utils, RealTime |
+| Message DB | MongoDB Atlas (Mongoose) | 9.x | RealTime |
+| Cache | Redis (Upstash TLS) | 5.x | Auth, RealTime |
+| Message Broker | Apache Kafka on Aiven (KafkaJS) via SASL/SSL | 2.x | Auth, Job (produce) · Utils (consume) |
+| Auth | jsonwebtoken | 9.x | All |
+| Password Hash | bcrypt | 6.x | Auth |
 | File Storage | Cloudinary | v2 | Utils (via Auth, User, Job upload relay) |
-| AI Engine | Google Gemini 2.5 Flash (`@google/genai`) | 2.0 | Utils |
-| PDF Engine | Puppeteer Core (headless Chrome) | 24 | Utils |
-| Email | Nodemailer (Gmail SMTP port 465) | 8.0 | Utils |
+| AI Engine | Google Gemini (`@google/genai`) — multi-model fallback | 2.x | Utils |
+| PDF Engine | Puppeteer Core + Alpine Chromium | 24.x | Utils |
+| Email | Nodemailer (Gmail SMTP port 465, `pool: true`) | 8.x | Utils |
 | Real-time | Socket.IO | 4.8 | RealTime |
-| File Parsing | Multer (memory storage) + DataURI | 2.1 | Auth, User, Job, Utils, RealTime |
-| HTTP Client | Axios | 1.15+ | Auth, User, Job, RealTime → Utils |
-| Dev server | Nodemon + Concurrently | 3.1 / 9.2 | All |
+| File Parsing | Multer (memory storage) + DataURI | 2.x | Auth, User, Job, Utils, RealTime |
+| HTTP Client | Axios | 1.x | Auth, User, Job, RealTime → Utils |
+| Dev server | Nodemon + Concurrently | latest | All |
 
 ### Frontend
 
 | Category | Technology | Version |
 |---|---|---|
-| Framework | Next.js (App Router, Webpack mode) | 16.2.6 |
-| UI Library | React + React DOM | 19.2 |
+| Framework | Next.js (App Router) | 15+ |
+| UI Library | React + React DOM | 19.x |
 | Language | TypeScript | 5 |
 | Styling | Tailwind CSS | 4 |
-| Component Library | shadcn/ui (Radix UI primitives) | 4.7 |
+| Component Library | shadcn/ui (Radix UI primitives) | latest |
 | State Management | React Context API (AppContext + SocketContext) | — |
-| HTTP Client | Axios | 1.16 |
-| Auth Storage | js-cookie (JWT in browser cookie `"token"`) | 3.0 |
+| HTTP Client | Axios | 1.x |
+| Auth Storage | js-cookie (JWT in browser cookie `"token"`) | 3.x |
 | Real-time | socket.io-client | 4.8 |
-| Notifications | react-hot-toast | 2.6 |
-| Icons | lucide-react | 1.14 |
+| Notifications | react-hot-toast | 2.x |
+| Icons | lucide-react | latest |
 | Theme | next-themes (dark/light/system) | 0.4 |
 | Class Utilities | clsx + tailwind-merge | latest |
 
@@ -161,7 +166,7 @@ hireheaven/
 │   │   │   │   └── TryCatch.ts        # Async wrapper
 │   │   │   ├── app.ts                 # Express app
 │   │   │   ├── index.ts               # DB init + Redis connect + server
-│   │   │   ├── producer.ts            # Kafka producer (send-mail topic)
+│   │   │   ├── producer.ts            # Kafka producer → Aiven (send-mail, RF=3)
 │   │   │   └── template.ts            # Forgot password HTML email
 │   │   ├── Dockerfile
 │   │   └── package.json
@@ -184,7 +189,7 @@ hireheaven/
 │   │   │   ├── utilis/                # buffer, db, errorHandler, TryCatch
 │   │   │   ├── app.ts
 │   │   │   ├── index.ts               # DB init + Kafka + server
-│   │   │   ├── producer.ts            # Kafka producer (send-mail topic)
+│   │   │   ├── producer.ts            # Kafka producer → Aiven (send-mail, RF=3)
 │   │   │   └── template.ts            # Application status update email
 │   │   ├── Dockerfile
 │   │   └── package.json
@@ -193,12 +198,13 @@ hireheaven/
 │   │   ├── src/
 │   │   │   ├── middleware/            # auth.ts (isAuth for AI routes)
 │   │   │   ├── utilis/
+│   │   │   │   ├── aiFallback.ts      # Multi-model Gemini fallback + retry
 │   │   │   │   ├── db.ts
 │   │   │   │   └── generateResumeHTML.ts  # HTML template for Puppeteer
-│   │   │   ├── consumer.ts            # Kafka consumer → Nodemailer
+│   │   │   ├── consumer.ts            # Kafka consumer → Nodemailer (pool + TLS)
 │   │   │   ├── index.ts               # Express + Cloudinary config + Kafka consumer start
 │   │   │   └── routes.ts              # /upload /career /resume-analyser /create-resume /download-resume
-│   │   ├── Dockerfile
+│   │   ├── Dockerfile                 # node:22-alpine + Chromium install
 │   │   └── package.json
 │   │
 │   └── realtime/                      # RealTime Service (Port 5004)
@@ -222,7 +228,7 @@ hireheaven/
 │       ├── Dockerfile
 │       └── package.json
 │
-└── frontend/                          # Next.js 16 Frontend (Port 3000)
+└── frontend/                          # Next.js Frontend (Port 3000)
     ├── src/
     │   ├── app/
     │   │   ├── (auth)/
@@ -260,7 +266,7 @@ hireheaven/
     │   │   ├── mode-toggle.tsx
     │   │   ├── navbar.tsx
     │   │   ├── resume-analyzer.tsx    # ATS analyser UI
-    │   │   ├── ResumeBuilder.tsx      # AI resume builder + download UI
+    │   │   ├── ResumeBuilder.tsx      # AI resume builder + PDF download (Bearer token auth)
     │   │   └── theme-provider.tsx
     │   ├── context/
     │   │   ├── AppContext.tsx          # Global state + all REST calls + service URLs
@@ -281,16 +287,17 @@ hireheaven/
 
 | Requirement | Notes |
 |---|---|
-| Node.js ≥ 19 | All backend services require ≥ 19 |
+| Node.js ≥ 19 | All backend services |
 | npm ≥ 9 | Or yarn / pnpm |
-| Kafka broker | Local (Docker) or cloud (Confluent, Upstash) |
-| Redis | Local (`redis-server`) or Upstash (use `rediss://` for TLS) |
-| Neon account | Free tier sufficient — create one database, shared across all services |
+| Kafka broker | **Aiven** (recommended — cloud Kafka with SASL/SSL) or local Docker |
+| Redis | Local (`redis://`) or **Upstash** (`rediss://` TLS) |
+| Neon account | Free tier — one database shared across all services |
 | MongoDB Atlas account | Free M0 cluster |
 | Cloudinary account | Free tier for file uploads |
-| Google AI Studio key | For Gemini 2.5 Flash (AI features) |
+| Google AI Studio key | For Gemini AI features (`API_KEY_GEMINI`) |
 | Gmail App Password | 2FA → App Passwords → generate one |
-| Google Chrome | Required by Puppeteer for PDF generation |
+
+> **No local Chromium required.** The Utils Service Dockerfile installs `chromium` from the Alpine package registry at build time. `PUPPETEER_EXECUTABLE_PATH` is automatically set inside the container.
 
 ### 1 — Clone the repository
 
@@ -313,7 +320,7 @@ Open 5 separate terminals:
 # Terminal 1 — Auth Service
 cd backend/auth && npm install && npx nodemon
 # Running on http://localhost:5001
-# Auto-creates PostgreSQL tables on first boot
+# Auto-creates PostgreSQL tables + Kafka topic on first boot
 
 # Terminal 2 — User Service
 cd backend/user && npm install && npx nodemon
@@ -323,7 +330,7 @@ cd backend/user && npm install && npx nodemon
 # Terminal 3 — Job Service
 cd backend/job && npm install && npx nodemon
 # Running on http://localhost:5002
-# Auto-creates companies, jobs, applications tables
+# Auto-creates companies, jobs, applications tables + Kafka topic
 
 # Terminal 4 — Utils Service
 cd backend/utilsService && npm install && npx nodemon
@@ -374,8 +381,10 @@ DB_URL=postgresql://<user>:<password>@<host>.neon.tech/<dbname>?sslmode=require
 # Redis (local: redis://localhost:6379 | Upstash: rediss://...)
 REDIS_URL=redis://localhost:6379
 
-# Kafka
-kafka_Broker=localhost:9092
+# Kafka — Aiven cloud broker (SASL/SSL)
+KAFKA_AIVEN_BROKER=<your-project>.aivencloud.com:<port>
+KAFKA_USERNAME=avnadmin
+KAFKA_PASSWORD=<aiven-service-password>
 
 # JWT — MUST match all other services
 JWT_SEC=your_super_secret_jwt_key_change_this
@@ -401,7 +410,12 @@ UPLOAD_SERVICE=http://localhost:5005
 ```env
 PORT=5002
 DB_URL=postgresql://<user>:<password>@<host>.neon.tech/<dbname>?sslmode=require
-kafka_Broker=localhost:9092
+
+# Kafka — Aiven cloud broker
+KAFKA_AIVEN_BROKER=<your-project>.aivencloud.com:<port>
+KAFKA_USERNAME=avnadmin
+KAFKA_PASSWORD=<aiven-service-password>
+
 JWT_SEC=your_super_secret_jwt_key_change_this
 UPLOAD_SERVICE=http://localhost:5005
 ```
@@ -419,18 +433,26 @@ CLOUD_NAME=your_cloudinary_cloud_name
 CLOUD_API_KEY=your_cloudinary_api_key
 CLOUD_API_SECRET=your_cloudinary_api_secret
 
-# Google Gemini AI
+# Google Gemini AI — used by multi-model fallback
 API_KEY_GEMINI=your_gemini_api_key_from_aistudio
 
 # Gmail SMTP (use App Password, NOT your account password)
 EMAIL_USER=youraddress@gmail.com
 EMAIL_PASS=xxxx_xxxx_xxxx_xxxx
 
-# Kafka
-kafka_Broker=localhost:9092
+# Kafka — Aiven cloud broker
+KAFKA_AIVEN_BROKER=<your-project>.aivencloud.com:<port>
+KAFKA_USERNAME=avnadmin
+KAFKA_PASSWORD=<aiven-service-password>
 
 # JWT (for isAuth middleware on /create-resume and /download-resume)
 JWT_SEC=your_super_secret_jwt_key_change_this
+
+# Puppeteer — set automatically in Docker; required for local dev
+# Linux:   /usr/bin/google-chrome-stable
+# macOS:   /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+# Docker:  /usr/bin/chromium-browser  (set by Dockerfile ENV)
+PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ```
 
 ### RealTime Service — `backend/realtime/.env`
@@ -531,10 +553,12 @@ NEXT_PUBLIC_REALTIME_SERVICE=https://realtime-latest-skhc.onrender.com
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
 | POST | `/upload` | ❌ Internal | Accept DataURI buffer + optional `public_id` (deletes old), upload to Cloudinary |
-| POST | `/career` | ❌ | AI career path guide from skills string → Gemini JSON |
+| POST | `/career` | ❌ | AI career path guide from skills string — uses `generateWithFallback()` |
 | POST | `/resume-analyser` | ❌ | ATS score + suggestions from PDF base64 → Gemini PDF vision |
-| POST | `/create-resume` | ✅ | Build ATS-optimised resume JSON from user profile + form data using Gemini |
-| POST | `/download-resume` | ✅ | Render resume JSON as HTML → Puppeteer → binary PDF download |
+| POST | `/create-resume` | ✅ Bearer | Build ATS-optimised resume JSON from user profile + form data |
+| POST | `/download-resume` | ✅ Bearer | Render resume JSON → Puppeteer → binary A4 PDF download |
+
+> **Auth note on `/create-resume` and `/download-resume`:** These routes are authenticated via `Authorization: Bearer <token>` header (read by the `isAuth` middleware). The frontend reads the JWT from the `"token"` cookie (`js-cookie`) and attaches it as an explicit header, since the Utils Service runs on a different origin from the frontend.
 
 ### RealTime Service — Base: `/api/chat`
 
@@ -824,15 +848,64 @@ Is receiver in my following list?
 
 ---
 
-## AI Features
+## AI Features — Technical Deep Dive
 
-All AI features are handled by the **Utils Service** using **Google Gemini 2.5 Flash**.
+All AI features are handled by the **Utils Service** using Google Gemini via the `@google/genai` SDK.
+
+---
+
+### Multi-Model AI Fallback (`aiFallback.ts`)
+
+The `/career` endpoint (and all AI routes that use `generateWithFallback`) are protected by a **resilient multi-model fallback and retry system** — a production pattern that ensures AI availability during API quota exhaustion or service disruptions.
+
+```typescript
+// backend/utilsService/src/utilis/aiFallback.ts
+
+const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"];
+```
+
+**How it works:**
+
+```
+generateWithFallback(systemInstruction, userPrompt)
+         │
+         ▼
+Try model[0]: gemini-2.5-flash
+   ├── SUCCESS → return response.text
+   ├── 429 / 400 → IMMEDIATE fallback (abandon this model)
+   │              └── move to model[1]
+   └── 503 / transient →
+         Attempt 1 → wait 2s → Attempt 2 → wait 4s → Attempt 3
+         ├── SUCCESS at any attempt → return
+         └── 3 attempts exhausted → move to model[1]
+
+Try model[1]: gemini-2.5-flash-lite  (same retry logic)
+Try model[2]: gemini-2.0-flash       (same retry logic)
+
+All 3 models exhausted →
+   return JSON graceful fallback:
+   { error: true, message: "AI servers are currently experiencing high traffic...", atsScore: 0 }
+```
+
+**Error handling logic:**
+| HTTP Status | Behavior |
+|---|---|
+| `429` (Rate Limit / Resource Exhausted) | Immediate model switch — no retry |
+| `400` (Bad Request / Invalid Argument) | Immediate model switch — no retry |
+| `503` (Service Unavailable) | Exponential backoff retry on same model (2s, 4s) |
+| Other transient errors | Same as 503 — retry with backoff |
+
+This means a single user request can silently cascade through up to 9 Gemini API calls (3 models × 3 attempts) before returning a graceful degraded response — without the user ever seeing a raw error.
+
+---
 
 ### Career Path Guide
 
 **Endpoint:** `POST /api/utilsService/career`
 
 **Input:** `{ "skills": "React, Node.js, PostgreSQL, Docker" }`
+
+Uses `generateWithFallback()` — benefits from full multi-model resilience.
 
 **Output:**
 ```json
@@ -853,13 +926,15 @@ All AI features are handled by the **Utils Service** using **Google Gemini 2.5 F
 }
 ```
 
+---
+
 ### ATS Resume Analyser
 
 **Endpoint:** `POST /api/utilsService/resume-analyser`
 
 **Input:** `{ "pdfBase64": "data:application/pdf;base64,..." }`
 
-The PDF is sent directly as `inlineData` to Gemini — no temp file storage needed.
+The PDF is sent directly as `inlineData` to `gemini-2.5-flash` — no temp file storage needed. Gemini performs native PDF vision analysis.
 
 **Output:**
 ```json
@@ -879,24 +954,32 @@ The PDF is sent directly as `inlineData` to Gemini — no temp file storage need
 }
 ```
 
+---
+
 ### AI Resume Builder
 
-**Endpoint:** `POST /api/utilsService/create-resume` (authenticated)
+**Endpoint:** `POST /api/utilsService/create-resume` (authenticated via `Authorization: Bearer <token>`)
 
-The service auto-fetches `name`, `email`, `phone_number`, `bio` from the database for the authenticated user, then combines with form input.
+The service auto-fetches `name`, `email`, `phone_number`, `bio` from the PostgreSQL database for the authenticated user, then combines with form input from the frontend.
 
 **Prompt enforces:**
 - XYZ formula on all experience/project bullet points ("Accomplished X as measured by Y, by doing Z")
 - High-impact action verbs (Architected, Engineered, Orchestrated…)
 - Quantified metrics and scale implied from context
 - ATS-safe formatting with technical depth
+- Strict JSON-only output (no markdown wrapping)
 
 **Output includes:**
 ```json
 {
-  "personalInfo": { ... },
+  "personalInfo": { "name": "", "email": "", "phone": "", "linkedin": "", "github": "", "portfolio": "" },
   "summary": "...",
-  "technicalSkills": { "languages": [], "frontend": [], "backendAndDatabases": [], "toolsAndArchitecture": [] },
+  "technicalSkills": {
+    "languages": [],
+    "frontend": [],
+    "backendAndDatabases": [],
+    "toolsAndArchitecture": []
+  },
   "experience": [{ "company": "", "role": "", "duration": "", "points": [] }],
   "projects": [{ "name": "", "techStack": "", "liveUrl": "", "repoUrl": "", "points": [] }],
   "education": [{ "institution": "", "degree": "", "duration": "", "score": "" }],
@@ -909,31 +992,103 @@ The service auto-fetches `name`, `email`, `phone_number`, `bio` from the databas
 }
 ```
 
-### PDF Resume Download
+---
 
-**Endpoint:** `POST /api/utilsService/download-resume` (authenticated)
+### PDF Resume Download — Puppeteer + Alpine Chromium
 
-Takes the resume JSON from the builder, generates HTML with `generateResumeHTML()`, launches headless Chrome via Puppeteer, renders to A4 PDF (12mm margins), and streams the binary response.
+**Endpoint:** `POST /api/utilsService/download-resume` (authenticated via `Authorization: Bearer <token>`)
+
+Takes the resume JSON from the builder, generates styled HTML via `generateResumeHTML()`, launches headless Chromium, renders to A4 PDF (12mm margins), and streams the binary response.
 
 ```
 Content-Type: application/pdf
 Content-Disposition: attachment; filename="john_doe_resume.pdf"
 ```
 
-> ⚠️ **`executablePath`** is currently set to Windows Chrome path. Update for your environment:
-> - Linux: `/usr/bin/google-chrome-stable`
-> - macOS: `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`
-> - Docker: Install Chromium in the Dockerfile
+**Puppeteer launch configuration (production-safe):**
+
+```typescript
+const browser = await puppeteer.launch({
+  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+  headless: true,
+  args: [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",   // prevents crashes in constrained container memory
+  ],
+});
+```
+
+> **`--disable-dev-shm-usage`** is critical in Docker/Alpine environments where `/dev/shm` (shared memory) is limited to 64MB by default. Without this flag, Chromium will crash on complex PDF renders.
+
+**Alpine Chromium setup (Dockerfile):**
+
+The Utils Service uses a **multi-stage Docker build** (`node:22-alpine`) that installs the Alpine-native `chromium` package instead of bundling a full Chromium binary via npm:
+
+```dockerfile
+FROM node:22-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY tsconfig.json ./
+COPY src ./src
+RUN npm run build
+
+FROM node:22-alpine
+
+# Install Chromium + required system libraries
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    udev
+
+# Point Puppeteer to the Alpine system Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --only=production
+COPY --from=builder /app/dist ./dist
+CMD ["node", "dist/index.js"]
+```
+
+`PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true` prevents the npm post-install from downloading a second ~300MB Chromium binary — the Alpine system package is used instead.
+
+---
+
+### Frontend Auth for AI Routes (`ResumeBuilder.tsx`)
+
+The `/create-resume` and `/download-resume` routes require JWT authentication. Because the Utils Service runs on a **different origin** from the frontend, HTTP-only cookies are not forwarded in cross-origin requests. The frontend therefore reads the JWT from the `"token"` cookie (set by the Auth Service on login) and attaches it explicitly:
+
+```typescript
+// frontend/src/components/ResumeBuilder.tsx
+const token = Cookies.get("token");
+
+await axios.post(`${utils_service}/api/utilsService/create-resume`, payload, {
+  headers: {
+    Authorization: `Bearer ${token}`
+  },
+  withCredentials: true
+});
+```
+
+Both `create-resume` and `download-resume` use this pattern. The `isAuth` middleware on the Utils Service reads `Authorization: Bearer <token>` and verifies the JWT using the shared `JWT_SEC`.
 
 ---
 
 ## Kafka Event Flow
 
-HireHeaven uses Kafka for **asynchronous, decoupled email delivery**. The API response never waits for email — the publish is fire-and-forget with `.catch()` logging.
+HireHeaven uses **Apache Kafka hosted on Aiven** for asynchronous, decoupled email delivery. The API response never waits for email — the publish is fire-and-forget.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                      Kafka: topic "send-mail"                       │
+│                      (1 partition, replicationFactor: 3)            │
 │                                                                     │
 │  PRODUCERS:                        CONSUMER:                        │
 │                                                                     │
@@ -944,15 +1099,75 @@ HireHeaven uses Kafka for **asynchronous, decoupled email delivery**. The API re
 │  (application status update)            ▼                           │
 │                                    Nodemailer                       │
 │                                    Gmail SMTP :465 (SSL)            │
+│                                    pool: true                       │
 │                                         │                           │
 │                                         ▼                           │
 │                                    User's inbox ✉️                  │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**Topic auto-creation:** Both Auth and Job Service admin clients check `admin.listTopics()` on startup and create `send-mail` (1 partition, replication factor 1) if it doesn't exist.
+### Kafka Connection (Aiven SASL/SSL)
 
-**Message schema:**
+Both Auth and Job Service producers connect to Aiven with SASL PLAIN over TLS:
+
+```typescript
+const kafka = new Kafka({
+  clientId: "auth-service",           // or "job-service"
+  brokers: [process.env.KAFKA_AIVEN_BROKER as string],
+  ssl: { rejectUnauthorized: false },
+  sasl: {
+    mechanism: "plain",
+    username: process.env.KAFKA_USERNAME as string,
+    password: process.env.KAFKA_PASSWORD as string,
+  },
+});
+```
+
+### Topic Auto-Creation with Replication Factor 3
+
+On startup, both Auth and Job services check if the topic exists and create it with **replication factor 3** (matching Aiven's minimum RF for managed clusters):
+
+```typescript
+const topics = await admin.listTopics();
+
+if (!topics.includes("send-mail")) {
+  await admin.createTopics({
+    topics: [{
+      topic: "send-mail",
+      numPartitions: 1,
+      replicationFactor: 3,    // required for Aiven managed Kafka
+    }]
+  });
+}
+```
+
+> **Why RF=3?** Aiven's managed Kafka clusters require a minimum replication factor of 3. This also provides fault tolerance: the topic remains available even if 2 out of 3 brokers go offline.
+
+### Nodemailer — Connection Pooling + TLS
+
+The Utils Service consumer creates a **pooled** Nodemailer transporter per message, connecting to Gmail SMTP on port 465 (implicit SSL):
+
+```typescript
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,         // implicit SSL (port 465)
+  pool: true,           // reuse connections for multiple sends
+  tls: {
+    rejectUnauthorized: false,  // handles self-signed cert edge cases
+  },
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+await transporter.verify();  // validate SMTP connection before sending
+```
+
+`pool: true` enables connection reuse across multiple `sendMail()` calls, reducing connection overhead when multiple Kafka messages arrive in a burst.
+
+**Message schema published to Kafka:**
 ```json
 {
   "to": "user@example.com",
@@ -976,7 +1191,7 @@ Frontend (Next.js :3000)
   │
   ├─── Register / Login / Forgot / Reset ─────────────────→ Auth Service (:5001)
   │                                                               │
-  │                                                        Kafka "send-mail"
+  │                                                        Kafka "send-mail" (Aiven)
   │                                                               ↓
   ├─── Profile / Skills / Apply / Follow ─────────────────→ User Service (:5003)
   │         │                                                      │
@@ -988,11 +1203,12 @@ Frontend (Next.js :3000)
   │         │                                                      │
   │         └── Company logo upload ──────────────────────→ Utils Service (:5005)
   │                                                               │
-  │                                                         Kafka "send-mail"
+  │                                                         Kafka "send-mail" (Aiven)
   │                                                               ↓
   ├─── AI Career / ATS / Resume / PDF ────────────────────→ Utils Service (:5005)
-  │                                                               │
-  │                                                     Gemini AI / Puppeteer
+  │    (Bearer token in Authorization header)                     │
+  │                                                     Gemini AI (multi-model fallback)
+  │                                                     Puppeteer / Alpine Chromium
   │
   └─── Real-time Chat (REST + WebSocket) ─────────────────→ RealTime Service (:5004)
             │                                                      │
@@ -1042,11 +1258,9 @@ Different parts of this application have different load profiles:
 | **Utils Service** | CPU-intensive bursts | Puppeteer launches Chrome; Gemini has cold starts |
 | **Auth Service** | Low, infrequent | Login/register happen rarely per user |
 
-With a monolith you scale all features together even when only one is under load, wasting resources. With microservices you scale precisely where needed.
-
 ### Technology Freedom
 
-Each service uses the right tool for its job. The RealTime Service needs MongoDB for flexible document arrays and Socket.IO for WebSocket management. The Auth Service needs PostgreSQL for relational integrity and transactions. You cannot make these per-feature choices in a monolith — you pick one stack and live with it everywhere.
+Each service uses the right tool for its job. The RealTime Service needs MongoDB for flexible document arrays and Socket.IO for WebSocket management. The Auth Service needs PostgreSQL for relational integrity and transactions. You cannot make these per-feature choices in a monolith.
 
 ### Domain Isolation
 
@@ -1054,7 +1268,7 @@ Each service has a clear, single responsibility with a defined HTTP contract. A 
 
 ### Fault Tolerance via Kafka
 
-Email delivery is decoupled through Kafka. A temporary Gmail SMTP outage does not cause `POST /register` or application status updates to fail. The event is published and the consumer retries when the SMTP recovers. In a monolith these operations are tightly coupled in a single request-response cycle.
+Email delivery is decoupled through Kafka on Aiven. A temporary Gmail SMTP outage does not cause `POST /register` or application status updates to fail. The event is published and the consumer retries when the SMTP recovers. In a monolith these operations are tightly coupled in a single request-response cycle.
 
 ### The Tradeoffs We Made
 
@@ -1071,7 +1285,7 @@ For a project at this scale, the benefits — independent deployment, technology
 
 ## Polyglot Persistence
 
-HireHeaven uses **three different databases** and **one cache** — each chosen for the data it stores. This is polyglot persistence: matching the storage technology to the data's access pattern rather than forcing everything into one tool.
+HireHeaven uses **three different databases** and **one cache** — each chosen for the data it stores.
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -1095,65 +1309,30 @@ HireHeaven uses **three different databases** and **one cache** — each chosen 
 
 ### PostgreSQL — Why SQL for relational data
 
-User profiles, job listings, applications, companies, and the follow graph are all **highly relational**. A job application references a job, which references a company, which references a recruiter user. This chain of foreign keys with referential integrity is PostgreSQL's core strength.
+User profiles, job listings, applications, companies, and the follow graph are all **highly relational**. The `UNIQUE(job_id, applicant_id)` constraint prevents duplicate applications at the database level. The `user_role` ENUM ensures an invalid role can never be stored. The skill management transaction wraps three SQL statements atomically so a skill insert never leaves the database in a partial state.
 
-The `UNIQUE(job_id, applicant_id)` constraint prevents duplicate applications at the database level — not in application code. The `user_role` ENUM ensures an invalid role can never be stored. The skill management transaction (`BEGIN / COMMIT / ROLLBACK`) wraps three SQL statements atomically so a skill insert never leaves the database in a partial state.
-
-These guarantees would require significant application-level code to replicate in MongoDB.
-
-**Why Neon specifically:** Neon is serverless PostgreSQL — it scales to zero when idle (critical for keeping costs low on a deployed project), supports connection pooling via its serverless driver, and is a standard PostgreSQL instance so `@neondatabase/serverless` works as a drop-in for `pg`.
+**Why Neon specifically:** Neon is serverless PostgreSQL — it scales to zero when idle (critical for keeping costs low on a deployed project), supports connection pooling via its serverless driver, and is a standard PostgreSQL instance.
 
 ### MongoDB Atlas — Why document DB for chat
 
-Chat messages have a fundamentally different access pattern from relational data:
-
-- Messages are always read in **bulk by `conversationId`** (50 at a time, paginated) — never individually joined to other tables
-- `deletedFor` is an **array of user IDs** that grows dynamically. In SQL this would require a separate `message_deletions` table. In MongoDB it is a native array field with `$push` / `$ne` operators
-- `unreadCount` in Conversation is a **`Map<userId, number>`** — a dynamic map that fits naturally in a MongoDB document. In SQL this would require a separate `conversation_unread` table
+- Messages are always read in **bulk by `conversationId`** — never individually joined to other tables
+- `deletedFor` is an array of user IDs that grows dynamically — native to MongoDB, would require a separate table in SQL
+- `unreadCount` in Conversation is a `Map<userId, number>` — a dynamic map that fits naturally in a MongoDB document
 - `$set`, `$push`, `$inc` — MongoDB's partial update operators are purpose-built for the "update one field without rewriting the whole document" pattern that chat requires on every message status change
-- Message type (`text` / `image` / `document`) means some messages have a `mediaUrl` field and others do not. In SQL this is nullable columns. In MongoDB it is simply an absent field — the schema is flexible by design
-
-The compound index `{ conversationId: 1, createdAt: -1 }` makes paginated chat loading efficient. The text index `{ content: "text" }` enables full-text search across messages.
 
 ### Redis — Why in-memory for ephemeral state
 
-Redis serves two genuinely different purposes in this system, both of which match its core properties perfectly:
+**Password reset tokens:** A reset token needs to exist for exactly 15 minutes and then vanish automatically. Redis TTL (`EX: 900`) makes this a native feature — no cron jobs or cleanup queries.
 
-**Password reset tokens (Auth Service)**
+**Socket presence:** `user_socket:<userId> → socket.id` is read on every single message send. This data must be read instantly (O(1)), deleted immediately on disconnect, and must not persist across server restarts. Redis is the ideal fit.
 
-A reset token needs to exist for exactly 15 minutes and then vanish automatically. Redis TTL (`EX: 900`) makes this a native feature. There is no cron job, no cleanup query, no `WHERE expires_at < NOW()` sweep needed. Storing this in PostgreSQL would require a scheduled task or a per-request expiry check.
-
-**Socket presence (RealTime Service)**
-
-`user_socket:<userId> → socket.id` is read on every single message send to route the delivery to the correct WebSocket connection. This data must be:
-- Read instantly (O(1) — Redis GET)
-- Deleted immediately on disconnect (O(1) — Redis DEL)
-- Not persisted — if the server restarts, all sockets disconnect and all presence state correctly disappears
-
-Redis is the ideal fit. PostgreSQL would add table overhead and lock contention for a key that is deleted and recreated hundreds of times per minute at scale.
-
-**Message cache (RealTime Service)**
-
-The last 50 messages per conversation are cached in a Redis List. The vast majority of chat opens show only the most recent messages — this cache serves those requests entirely from memory without a MongoDB query. The cache is invalidated (`DEL`) on any mutation (edit, delete, clear) to ensure consistency. This is a standard **read-through cache with write invalidation** pattern.
-
-### Why Not One Database for Everything?
-
-Forcing all data into MongoDB would mean rebuilding foreign key integrity, ACID transactions, and complex multi-table JOINs in application code — all things PostgreSQL provides natively and reliably.
-
-Forcing everything into PostgreSQL would mean storing chat messages as rows in a `messages` table, making the `deletedFor` array a separate table, making `unreadCount` a separate table, and losing MongoDB's expressive document update operators. The chat schema would become several JOIN-heavy tables for data that is fundamentally document-shaped.
-
-Adding Redis as a pure cache on top of one database does not change the fundamental mismatch between the relational model and document-shaped chat data.
-
-Each database in this system handles data that is structurally suited to its model:
-- **Structured, relational, transactional → PostgreSQL**
-- **Document-oriented, flexible schema, bulk-read → MongoDB**
-- **Ephemeral, in-memory speed, TTL → Redis**
+**Message cache:** The last 50 messages per conversation are cached in a Redis List. Cache is invalidated (`DEL`) on any mutation (edit, delete, clear) — a standard **read-through cache with write invalidation** pattern.
 
 ---
 
 ## Deployment
 
-All services are deployed independently on **Render** (free tier). Each backend service has a `Dockerfile` and can be deployed as a Docker container.
+All services are deployed independently on **Render** (free tier). Each backend service has a `Dockerfile` and is deployed as a Docker container.
 
 | Service | Render URL |
 |---|---|
@@ -1162,6 +1341,7 @@ All services are deployed independently on **Render** (free tier). Each backend 
 | Job | `https://job-latest-eemi.onrender.com` |
 | Utils | `https://utilsservice-latest.onrender.com` |
 | RealTime | `https://realtime-latest-skhc.onrender.com` |
+| Frontend | [m-icro-service-job-portal.vercel.app](https://m-icro-service-job-portal.vercel.app) (Vercel) |
 
 **Managed cloud services:**
 
@@ -1170,8 +1350,9 @@ All services are deployed independently on **Render** (free tier). Each backend 
 | PostgreSQL | Neon | Serverless, scales to zero |
 | MongoDB | Atlas | Free M0 cluster |
 | Redis | Upstash | Serverless Redis, TLS (`rediss://`) |
+| Kafka | Aiven | Managed Apache Kafka, SASL/SSL, RF=3 |
 | File Storage | Cloudinary | Free tier for media |
-| AI | Google AI Studio | Gemini 2.5 Flash |
+| AI | Google AI Studio | Gemini 2.5 Flash + Flash Lite + 2.0 Flash (fallback chain) |
 | Email | Gmail SMTP | App Password required |
 
 ### Per-Service Docker Build
@@ -1192,7 +1373,7 @@ cd backend/job
 docker build -t hireheaven-job .
 docker run -p 5002:5002 --env-file .env hireheaven-job
 
-# Utils Service
+# Utils Service (Chromium is installed automatically via Dockerfile)
 cd backend/utilsService
 docker build -t hireheaven-utils .
 docker run -p 5005:5005 --env-file .env hireheaven-utils
@@ -1249,6 +1430,7 @@ services:
       - "5005:5005"
     env_file: ./backend/utilsService/.env
     restart: unless-stopped
+    # Note: Chromium is baked in via Dockerfile — no extra config needed
 
   realtime:
     build: ./backend/realtime
@@ -1278,27 +1460,37 @@ docker-compose up --build
 # Start in background
 docker-compose up --build -d
 
-# View logs
-docker-compose logs -f realtime
+# View logs for a specific service
+docker-compose logs -f utils
 
 # Stop everything
 docker-compose down
 ```
 
-> **Note on Puppeteer in Docker:** The Utils Service requires Chromium for PDF generation. Add this to `backend/utilsService/Dockerfile`:
-> ```dockerfile
-> FROM node:20-alpine
-> RUN apk add --no-cache chromium
-> ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-> WORKDIR /app
-> COPY package*.json ./
-> RUN npm install
-> COPY . .
-> RUN npx tsc
-> EXPOSE 5005
-> CMD ["node", "dist/index.js"]
-> ```
-> Then update `executablePath` in `routes.ts` to `/usr/bin/chromium-browser`.
+---
+
+## Production Readiness
+
+### What's production-grade in this codebase
+
+| Feature | Implementation |
+|---|---|
+| **AI Resilience** | Multi-model fallback chain (3 models × 3 retries with exponential backoff) — never returns a raw 503 to the user |
+| **Kafka Reliability** | Aiven managed Kafka with `replicationFactor: 3` — topic survives broker failures; email delivery is fully async and decoupled |
+| **Email Transport** | Nodemailer with `pool: true` on port 465 (implicit SSL) + `transporter.verify()` before send — connections are reused, SMTP health checked |
+| **PDF Generation** | Alpine Chromium (system package) + `--no-sandbox --disable-dev-shm-usage` — crash-safe in constrained Docker environments |
+| **JWT Auth** | Independently verified per-service — no single point of failure for auth; `Authorization: Bearer` header used for cross-origin AI routes |
+| **Redis TTL** | Password reset tokens auto-expire at 15 minutes via native Redis TTL — no cleanup crons needed |
+| **Database Constraints** | `UNIQUE(job_id, applicant_id)` prevents duplicate applications at DB level; ENUMs enforce valid roles at DB level |
+| **Memory Safety** | Multer always uses memory storage — no files ever written to disk across any service |
+| **Cache Consistency** | Redis chat cache invalidated on every mutation (edit, delete, clear) — write-invalidation pattern, not TTL |
+| **Docker Multi-stage** | Utils Service uses builder + runtime stage — `node_modules` from build stage not included in production image |
+| **Anti-enumeration** | `/forgot` always returns the same message regardless of whether email exists |
+| **Follow-gated Chat** | Messaging requires mutual follow verification against PostgreSQL before every send — enforced at server level |
+
+### CI/CD
+
+Services are deployed as Docker containers to **Render**. Each push to the main branch triggers a new deploy per service. The frontend deploys to **Vercel** with automatic preview deployments per pull request.
 
 ---
 
@@ -1314,8 +1506,8 @@ docker-compose down
 
 - All controllers wrapped in `TryCatch` utility (no try/catch boilerplate in controllers)
 - Custom `ErrorHandler` class for typed HTTP errors
-- PostgreSQL queries use tagged template literals (`sql`...``) from `@neondatabase/serverless` — no string concatenation
-- Dynamic SQL (e.g. `getAllActiveJobs` filters) uses parameterised `sql.query(string, values[])` — no string interpolation
+- PostgreSQL queries use tagged template literals (`` sql`...` ``) from `@neondatabase/serverless` — no string concatenation
+- Dynamic SQL uses parameterised `sql.query(string, values[])` — no string interpolation
 - Multer always uses memory storage — no files written to disk
 - Files are always uploaded via Utils Service — never directly to Cloudinary from Auth/User/Job/RealTime
 - JWT is verified independently in each service — no Auth Service call on every request
